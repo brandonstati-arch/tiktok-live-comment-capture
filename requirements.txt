@@ -1,0 +1,15 @@
+# Dependencias de la captura de comentarios de TikTok LIVE
+#
+# Instalación:
+#   python -m venv .venv
+#   .venv/Scripts/python.exe -m pip install -r requirements.txt   (Windows)
+#   .venv/bin/python -m pip install -r requirements.txt           (Linux/macOS)
+
+# Cliente del WebSocket de TikTok LIVE (incluye el cliente HTTP y la firma)
+TikTokLive>=7.0.0,<8.0.0
+
+# Servidor web local y streaming de eventos al navegador
+Flask>=3.0.0
+
+# Generación del libro Excel de salida
+openpyxl>=3.1.0
