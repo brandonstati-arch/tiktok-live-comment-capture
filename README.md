@@ -7,7 +7,7 @@ Exact publish time, author identity and role for every message — exported to E
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-25F4EE)](#requirements)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-25F4EE)](#-requirements)
 [![License](https://img.shields.io/badge/License-MIT-FE2C55)](LICENSE)
 
 ![The application interface during a live capture: control panel, session metrics, the live comment table and the side panel with gifts and generated files](docs/interfaz-principal.png)
