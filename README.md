@@ -20,19 +20,19 @@ Exact publish time, author identity and role for every message — exported to E
 
 ## 📖 Table of contents
 
-- [🎯 What it does](#what-it-does)
-- [✨ Features](#features)
-- [📸 Screenshots](#screenshots)
-- [📊 What gets captured](#what-gets-captured)
-- [✅ Requirements](#requirements)
-- [🚀 Quick start](#quick-start)
-- [🧪 Trying it without a live stream](#trying-it-without-a-live-stream)
-- [💻 Command line usage](#command-line-usage)
-- [📁 Output files](#output-files)
-- [🏗️ How it works](#how-it-works)
-- [🔍 Verification](#verification)
-- [⚠️ Limitations and legal notes](#limitations-and-legal-notes)
-- [📄 License](#license)
+- [🎯 What it does](#-what-it-does)
+- [✨ Features](#-features)
+- [📸 Screenshots](#-screenshots)
+- [📊 What gets captured](#-what-gets-captured)
+- [✅ Requirements](#-requirements)
+- [🚀 Quick start](#-quick-start)
+- [🧪 Trying it without a live stream](#-trying-it-without-a-live-stream)
+- [💻 Command line usage](#-command-line-usage)
+- [📁 Output files](#-output-files)
+- [🏗️ How it works](#️-how-it-works)
+- [🔍 Verification](#-verification)
+- [⚠️ Limitations and legal notes](#️-limitations-and-legal-notes)
+- [📄 License](#-license)
 
 ---
 
