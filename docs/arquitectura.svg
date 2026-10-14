@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 505" width="1160" height="505" role="img" aria-labelledby="titulo desc">
+  <title id="titulo">Data flow of the TikTok LIVE comment capture pipeline</title>
+  <desc id="desc">A TikTok LIVE broadcast is read through its internal WebSocket by capturer.py, which runs asyncio in its own thread and writes each comment to a CSV file row by row. Comments are handed to app.py through a queue, which streams them to the browser over Server-Sent Events. When the capture stops, an Excel workbook is generated.</desc>
+
+  <defs>
+    <marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+    </marker>
+    <marker id="flecha-rosa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fe2c55"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1160" height="505" fill="#ffffff"/>
+
+  <!-- Titulo -->
+  <text x="40" y="46" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="700" fill="#111827">How the capture pipeline works</text>
+  <text x="40" y="70" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" fill="#6b7280">From the live stream to the spreadsheet, without losing a single message</text>
+
+  <!-- ============ Etapa 1: TikTok LIVE ============ -->
+  <rect x="40" y="130" width="196" height="118" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <rect x="40" y="130" width="196" height="5" rx="2.5" fill="#25f4ee"/>
+  <text x="138" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#111827" text-anchor="middle">TikTok LIVE</text>
+  <text x="138" y="196" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Internal WebSocket</text>
+  <text x="138" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">+ Euler Stream signature</text>
+  <text x="138" y="234" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#9ca3af" text-anchor="middle">CommentEvent · GiftEvent</text>
+
+  <line x1="240" y1="189" x2="286" y2="189" stroke="#9ca3af" stroke-width="1.6" marker-end="url(#flecha)"/>
+
+  <!-- ============ Etapa 2: capturer.py ============ -->
+  <rect x="292" y="112" width="252" height="154" rx="12" fill="#fff1f4" stroke="#fe2c55" stroke-width="1.8"/>
+  <text x="418" y="148" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#d81e45" text-anchor="middle">capturer.py</text>
+  <text x="418" y="170" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">CaptureSession</text>
+  <text x="418" y="196" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">asyncio loop in its own thread</text>
+  <text x="418" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">dedup by msg_id</text>
+  <text x="418" y="236" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">26 fields per comment</text>
+  <text x="418" y="256" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#9ca3af" text-anchor="middle">exact publish time + latency</text>
+
+  <!-- Arista capturer -> app (cola) -->
+  <line x1="548" y1="189" x2="600" y2="189" stroke="#9ca3af" stroke-width="1.6" marker-end="url(#flecha)"/>
+  <text x="574" y="178" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#6b7280" text-anchor="middle">queue</text>
+
+  <!-- ============ Etapa 3: app.py ============ -->
+  <rect x="606" y="112" width="240" height="154" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <rect x="606" y="112" width="240" height="5" rx="2.5" fill="#fe2c55"/>
+  <text x="726" y="148" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#111827" text-anchor="middle">app.py</text>
+  <text x="726" y="170" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Flask + Server-Sent Events</text>
+  <text x="726" y="196" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">/api/stream</text>
+  <text x="726" y="216" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">snapshot + delta</text>
+  <text x="726" y="240" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#9ca3af" text-anchor="middle">reconnect-safe, no polling</text>
+
+  <line x1="850" y1="189" x2="896" y2="189" stroke="#9ca3af" stroke-width="1.6" marker-end="url(#flecha)"/>
+
+  <!-- ============ Etapa 4: navegador ============ -->
+  <rect x="902" y="130" width="218" height="118" rx="12" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <rect x="902" y="130" width="218" height="5" rx="2.5" fill="#25f4ee"/>
+  <text x="1011" y="172" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#111827" text-anchor="middle">Browser UI</text>
+  <text x="1011" y="196" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Live table</text>
+  <text x="1011" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#6b7280" text-anchor="middle">Filters · detail panel</text>
+  <text x="1011" y="234" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#9ca3af" text-anchor="middle">localhost, your machine only</text>
+
+  <!-- ============ Rama: salida a disco ============ -->
+  <path d="M 418 266 L 418 356" stroke="#fe2c55" stroke-width="1.8" fill="none" marker-end="url(#flecha-rosa)"/>
+  <text x="430" y="316" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#d81e45">writes as it goes</text>
+
+  <rect x="292" y="362" width="252" height="118" rx="12" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="418" y="396" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#111827" text-anchor="middle">sesiones/</text>
+  <text x="418" y="422" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">.csv — flushed after every row</text>
+  <text x="418" y="442" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#374151" text-anchor="middle">.xlsx — generated on stop</text>
+  <text x="418" y="464" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" fill="#9ca3af" text-anchor="middle">4 sheets · 26 columns</text>
+
+  <!-- Nota de privacidad -->
+  <rect x="606" y="362" width="514" height="118" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="630" y="392" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#1e40af">Everything stays on your machine</text>
+  <text x="630" y="416" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1e40af">The web interface listens on 127.0.0.1 only, and captured data never</text>
+  <text x="630" y="435" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1e40af">leaves your computer. The sessions folder is excluded from version</text>
+  <text x="630" y="454" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" fill="#1e40af">control, because chat messages are personal data.</text>
+</svg>

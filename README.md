@@ -1,98 +1,144 @@
-# Captura de comentarios de TikTok LIVE
+<div align="center">
 
-Aplicación de escritorio con interfaz web local que **captura en tiempo real los
-comentarios de un directo de TikTok**, guarda el texto, la hora exacta de
-publicación y toda la información disponible del autor, y **exporta el resultado
-a Excel** con cada campo en su columna.
+# 💬 TikTok LIVE Comment Capture
 
-Pensada para quien necesita analizar la conversación de un directo: investigación
-de audiencia, moderación, análisis de sentimiento, detección de preguntas
-frecuentes o simplemente conservar un chat que TikTok **no almacena**.
+**Real-time comment capture for TikTok LIVE streams.**
+Exact publish time, author identity and role for every message — exported to Excel with one field per column.
 
-> El chat de un directo no se guarda en TikTok. Si no lo capturas en directo, se
-> pierde. Esta herramienta existe para no perderlo.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-25F4EE)](#requirements)
+[![License](https://img.shields.io/badge/License-MIT-FE2C55)](LICENSE)
 
----
+![The application interface during a live capture: control panel, session metrics, the live comment table and the side panel with gifts and generated files](docs/interfaz-principal.png)
 
-## Índice
+</div>
 
-- [Características principales](#características-principales)
-- [Requisitos](#requisitos)
-- [Inicio rápido](#inicio-rápido)
-- [Uso desde la línea de comandos](#uso-desde-la-línea-de-comandos)
-- [Datos capturados](#datos-capturados)
-- [Ficheros de salida](#ficheros-de-salida)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Cómo funciona](#cómo-funciona)
-- [Verificación](#verificación)
-- [Limitaciones y avisos legales](#limitaciones-y-avisos-legales)
-- [Licencia](#licencia)
+> ⚠️ **TikTok does not store the chat of a live stream.** If you don't capture it while the stream is running, it's gone forever. That's the whole reason this tool exists.
 
 ---
 
-## Características principales
+## 📖 Table of contents
 
-- **Captura en vivo** de comentarios mediante la conexión WebSocket del directo,
-  con los eventos apareciendo en pantalla según llegan (Server-Sent Events).
-- **Hora exacta de publicación** tomada del servidor de TikTok, con precisión de
-  milisegundos, más la **latencia de recepción** calculada para cada mensaje.
-- **Identificación del autor**: usuario, nombre visible, ID numérico, Sec UID y
-  enlace directo al perfil.
-- **Rol y contexto de cada participante**: moderador, suscriptor, seguidor,
-  seguimiento mutuo, amigo, top gifter, nivel de miembro, nivel de gifter e
-  insignias.
-- **Sin pérdida de datos**: se escribe un CSV en disco fila a fila con `flush()`,
-  de modo que un corte del proceso no se lleva por delante la sesión.
-- **Excel generado automáticamente** al detener la captura, además de poder
-  exportarse a demanda. Cuatro hojas: comentarios, usuarios agregados, resumen y
-  regalos.
-- **Deduplicación por identificador real de mensaje** (`msg_id`), no por texto:
-  hay usuarios que repiten el mismo mensaje a propósito y no deben descartarse.
-- **Interfaz con filtros**: búsqueda libre, filtro por suscriptores, moderadores y
-  menciones, y panel de detalle con los 26 campos de cualquier comentario.
-- **Modo demostración** con datos simulados, para probar la aplicación completa
-  sin necesidad de que haya un directo en vivo en ese momento.
-- **Iniciador de doble clic** (`INICIAR.bat`) que prepara el entorno la primera
-  vez y arranca la aplicación abriendo el navegador solo.
-- **Modo consola** para sesiones largas, sin navegador abierto.
+- [🎯 What it does](#what-it-does)
+- [✨ Features](#features)
+- [📸 Screenshots](#screenshots)
+- [📊 What gets captured](#what-gets-captured)
+- [✅ Requirements](#requirements)
+- [🚀 Quick start](#quick-start)
+- [🧪 Trying it without a live stream](#trying-it-without-a-live-stream)
+- [💻 Command line usage](#command-line-usage)
+- [📁 Output files](#output-files)
+- [🏗️ How it works](#how-it-works)
+- [🔍 Verification](#verification)
+- [⚠️ Limitations and legal notes](#limitations-and-legal-notes)
+- [📄 License](#license)
 
 ---
 
-## Requisitos
+## 🎯 What it does
 
-- **Python 3.10 o superior** (probado en 3.13).
-- Windows para el iniciador `.bat`; en Linux o macOS se arranca a mano (ver más abajo).
-- Conexión a internet.
-- No necesita GPU ni clave de API.
+You give it a TikTok username that is currently live. It connects to the stream, listens for comments and records every single one with the **exact moment it was published according to TikTok's servers**, who wrote it and what their standing is in the room.
+
+It's aimed at anyone who needs to analyse what was said in a live stream: audience research, moderation, sentiment analysis, spotting frequently asked questions, or simply keeping a record of a conversation that TikTok throws away.
+
+Everything runs locally on your machine. There is no server, no account and no API key.
 
 ---
 
-## Inicio rápido
+## ✨ Features
 
-1. **Doble clic en `INICIAR.bat`.**
+| | |
+|---|---|
+| 🔴 **Live capture** | Comments appear on screen as they arrive, streamed over Server-Sent Events. No refreshing, no polling. |
+| ⏱️ **Exact timestamps** | Publish time taken from TikTok's own server with millisecond precision, plus the **reception latency** computed for every message. |
+| 👤 **Author identity** | Username, display name, numeric ID, Sec UID and a direct link to the profile. |
+| 🏅 **Role and context** | Moderator, subscriber, follower, mutual follow, friend, top gifter, member level, gifter level and badges. |
+| 💾 **Nothing gets lost** | The CSV is written row by row with `flush()`, so a crash or a `Ctrl+C` doesn't take the session with it. |
+| 📊 **Automatic Excel** | The workbook is generated when the capture stops — four sheets, formatted and ready to filter. |
+| 🧹 **Real deduplication** | Messages are deduplicated by their actual `msg_id`, never by text: people deliberately repeat themselves in chat. |
+| 🔎 **Filterable interface** | Free-text search, filters for subscribers / moderators / mentions, and a detail panel showing all 26 fields of any comment. |
+| 🧪 **Demo mode** | Generates synthetic comments so you can try the whole thing without waiting for someone to go live. |
+| 🖱️ **Double-click launcher** | `INICIAR.bat` sets up the environment the first time and opens the browser by itself. |
+| ⌨️ **Console mode** | For long sessions where you'd rather not keep a browser open. |
 
-   La primera vez crea el entorno virtual e instala las dependencias (tarda un
-   minuto); las siguientes arranca directamente. El navegador se abre solo en
-   `http://127.0.0.1:5000`.
+---
 
-2. Escribe el **usuario de TikTok** que está en directo (con o sin `@`).
+## 📸 Screenshots
 
-3. Pulsa **Iniciar captura**. Los comentarios aparecen en vivo con su hora exacta
-   y su autor.
+**Every field of a single comment.** Click any row to expand it into the full set of 26 captured fields — the raw server timestamp, the Sec UID, the badge list, the mention list, everything.
 
-4. Pulsa **Detener** (o espera a que termine el directo). El Excel se genera solo
-   y queda listado en el panel lateral.
+![Detail panel expanded under a comment row, showing all 26 captured fields including ISO timestamp, reception latency, author ID, Sec UID, role flags, member level and badges](docs/detalle-comentario.png)
 
-Para cerrar la aplicación, `Ctrl+C` en la ventana de consola.
+**Filters and the side panel.** Filter down to subscribers, moderators or comments containing mentions, while the side panel keeps the live gift feed and every file generated so far.
 
-### Probar sin un directo en vivo
+![The interface filtered to show only subscribers, with the subscribers chip highlighted and the side panel listing the live gift feed and the generated CSV and Excel files](docs/filtros.png)
 
-Pulsa **Probar con datos de ejemplo** en la interfaz. Se generan comentarios y
-regalos simulados que recorren exactamente el mismo camino que los reales
-(lectura de campos, escritura de CSV, exportación a Excel), así que sirve para
-comprobar que todo funciona sin depender de que alguien esté emitiendo.
+> 🗣️ **A note on language:** the interface and the Excel headers are in Spanish, because that's the language this project was built in. The column names are documented below in English. If you'd like an English UI, it's a contained change — the strings live in `templates/index.html`, `static/app.js` and the column definitions at the top of `capturer.py`.
 
-### En Linux o macOS
+---
+
+## 📊 What gets captured
+
+**26 fields per comment.** These are the exact headers you'll find in both the Excel and the CSV:
+
+| # | Column | Contents |
+|:--:|---|---|
+| 1 | `Nº` | Sequential index within the session |
+| 2 | `Fecha` | Publish date (`YYYY-MM-DD`) |
+| 3 | `Hora (HH:MM:SS)` | Publish time |
+| 4 | `Hora exacta (con ms)` | Publish time with milliseconds |
+| 5 | `Fecha-hora ISO 8601` | Full timestamp including timezone |
+| 6 | `Timestamp Unix (ms)` | Millisecond epoch timestamp |
+| 7 | `Latencia recepción (ms)` | Delay between publication and reception |
+| 8 | `Usuario (@)` | Username (`@handle`) |
+| 9 | `Nombre visible` | Display name shown in the stream |
+| 10 | `ID del autor` | Numeric user identifier |
+| 11 | `Sec UID` | Stable internal account identifier |
+| 12 | `Comentario` | The message text |
+| 13 | `Idioma` | Detected language of the comment |
+| 14 | `ID del mensaje` | Unique message identifier (used for deduplication) |
+| 15 | `Moderador` | `Sí` if they moderate the stream |
+| 16 | `Suscriptor` | `Sí` if they subscribe to the channel |
+| 17 | `Seguidor` | `Sí` if they follow the creator |
+| 18 | `Seguimiento mutuo` | `Sí` if the follow is mutual |
+| 19 | `Amigo` | `Sí` if they hold the friend badge |
+| 20 | `Top gifter` | `Sí` if they're on the gift leaderboard |
+| 21 | `Nivel de miembro` | Fans club level |
+| 22 | `Nivel de gifter` | User level earned by sending gifts |
+| 23 | `Insignias` | Every badge they hold, with its level |
+| 24 | `Menciones` | Users mentioned with `@` |
+| 25 | `Perfil` | Link to the TikTok profile |
+| 26 | `Sala (room_id)` | Identifier of the live room |
+
+Columns 2 to 6 are different representations of **the same instant**: the publish time reported by TikTok's server. If the server doesn't send it, the local reception time is used instead.
+
+---
+
+## ✅ Requirements
+
+- 🐍 **Python 3.10 or newer** (developed and tested on 3.13)
+- 🪟 Windows for the `.bat` launcher — on Linux and macOS you start it manually
+- 🌐 An internet connection
+- ❌ No GPU, no API key, no TikTok account
+
+---
+
+## 🚀 Quick start
+
+**1. Double-click `INICIAR.bat`.**
+
+The first run creates the virtual environment and installs the dependencies (about a minute). Every run after that starts straight away. The browser opens on its own at `http://127.0.0.1:5000`.
+
+**2. Type the username** of a TikTok account that is currently live (with or without the `@`).
+
+**3. Press `▶ Iniciar captura`.** Comments show up live with their exact timestamp and author.
+
+**4. Press `■ Detener`** — or just wait for the stream to end. The Excel file is generated automatically and listed in the side panel.
+
+To shut the application down, press `Ctrl+C` in the console window.
+
+### 🐧 On Linux or macOS
 
 ```bash
 python3 -m venv .venv
@@ -103,183 +149,104 @@ python app.py
 
 ---
 
-## Uso desde la línea de comandos
+## 🧪 Trying it without a live stream
 
-Para capturas largas, sin tener el navegador abierto:
+Press **`Probar con datos de ejemplo`** in the interface. It generates synthetic comments and gifts that travel through *exactly* the same code path as the real ones — field parsing, CSV writing, Excel export — so it's a genuine test of the pipeline, not a mock-up.
+
+This is also how the screenshots above were produced. See [`tools/screenshots.py`](tools/screenshots.py) if you want to regenerate them after a UI change.
+
+---
+
+## 💻 Command line usage
+
+For long captures, without a browser open:
 
 ```bash
-# Captura normal (Ctrl+C detiene y genera el Excel)
-.venv/Scripts/python.exe captura_cli.py @usuario
+# Normal capture (Ctrl+C stops it and generates the Excel)
+.venv/Scripts/python.exe captura_cli.py @username
 
-# Capturando también los regalos
-.venv/Scripts/python.exe captura_cli.py @usuario --regalos
+# Also record gifts
+.venv/Scripts/python.exe captura_cli.py @username --regalos
 
-# Detener automáticamente tras 5 minutos
-.venv/Scripts/python.exe captura_cli.py @usuario --segundos 300
+# Stop automatically after 5 minutes
+.venv/Scripts/python.exe captura_cli.py @username --segundos 300
 
-# Datos simulados, sin conexión a TikTok
+# Synthetic data, no connection to TikTok
 .venv/Scripts/python.exe captura_cli.py --demo
 ```
 
-En Linux o macOS, sustituye `.venv/Scripts/python.exe` por `.venv/bin/python`.
+On Linux or macOS, replace `.venv/Scripts/python.exe` with `.venv/bin/python`.
 
 ---
 
-## Datos capturados
+## 📁 Output files
 
-Cada comentario se guarda con **26 campos**. Estos son los encabezados exactos
-que encontrarás en el Excel y en el CSV:
+Everything lands in the `sesiones/` folder, which is **excluded from version control** because it holds personal data.
 
-| # | Columna | Contenido |
-|---|---|---|
-| 1 | `Nº` | Índice secuencial dentro de la sesión |
-| 2 | `Fecha` | Fecha de publicación (`AAAA-MM-DD`) |
-| 3 | `Hora (HH:MM:SS)` | Hora de publicación |
-| 4 | `Hora exacta (con ms)` | Hora de publicación con milisegundos |
-| 5 | `Fecha-hora ISO 8601` | Marca temporal completa con zona horaria |
-| 6 | `Timestamp Unix (ms)` | Marca temporal en milisegundos |
-| 7 | `Latencia recepción (ms)` | Retardo entre publicación y recepción |
-| 8 | `Usuario (@)` | Nombre de usuario (`@handle`) |
-| 9 | `Nombre visible` | Nombre mostrado en el directo |
-| 10 | `ID del autor` | Identificador numérico del usuario |
-| 11 | `Sec UID` | Identificador interno estable de la cuenta |
-| 12 | `Comentario` | Texto del mensaje |
-| 13 | `Idioma` | Idioma detectado del comentario |
-| 14 | `ID del mensaje` | Identificador único del mensaje (deduplicación) |
-| 15 | `Moderador` | `Sí` si es moderador del directo |
-| 16 | `Suscriptor` | `Sí` si está suscrito al canal |
-| 17 | `Seguidor` | `Sí` si sigue al creador |
-| 18 | `Seguimiento mutuo` | `Sí` si hay seguimiento mutuo |
-| 19 | `Amigo` | `Sí` si tiene la insignia de amistad |
-| 20 | `Top gifter` | `Sí` si está en el ranking de regalos |
-| 21 | `Nivel de miembro` | Nivel en el club de fans |
-| 22 | `Nivel de gifter` | Nivel de usuario por regalos enviados |
-| 23 | `Insignias` | Todas las insignias, con su nivel |
-| 24 | `Menciones` | Usuarios mencionados con `@` |
-| 25 | `Perfil` | Enlace al perfil de TikTok |
-| 26 | `Sala (room_id)` | Identificador de la sala del directo |
+### 📝 The live CSV
 
-Las columnas 2 a 6 son distintas representaciones del **mismo instante**: el de
-publicación según el servidor de TikTok. Si por lo que sea el servidor no envía
-esa marca, se usa la hora local de recepción.
+```
+sesiones/comentarios_<username>_<YYYYMMDD_HHMMSS>.csv
+```
 
----
+Written **row by row for the duration of the capture**, with `flush()` after every line. If the process dies or you kill it, you keep everything captured up to that moment. Encoded as `utf-8-sig` so Excel opens the accents correctly.
 
-## Ficheros de salida
+### 📊 The final Excel workbook
 
-Todo se guarda en la carpeta `sesiones/` (excluida del control de versiones, porque
-contiene datos personales).
+```
+sesiones/tiktok_<username>_<YYYYMMDD_HHMMSS>.xlsx
+```
 
-### CSV en vivo
+Generated automatically when the capture stops. Four sheets:
 
-`comentarios_<usuario>_<AAAAMMDD_HHMMSS>.csv`
-
-Se escribe **fila a fila mientras dura la captura**, con `flush()` tras cada
-línea. Si el proceso se cae o lo matas, conservas todo lo capturado hasta ese
-instante. Codificado en `utf-8-sig` para que Excel abra bien los acentos.
-
-### Excel final
-
-`tiktok_<usuario>_<AAAAMMDD_HHMMSS>.xlsx`
-
-Se genera automáticamente al detener la captura. Contiene cuatro hojas:
-
-| Hoja | Contenido |
+| Sheet | Contents |
 |---|---|
-| **Comentarios** | Una fila por comentario, las 26 columnas, con autofiltro, panel congelado y enlaces al perfil |
-| **Usuarios** | Agregado por autor: número de comentarios, primer y último mensaje, rol y nivel |
-| **Resumen** | Metadatos de la sesión (usuario, sala, duración, totales, comentarios por minuto) y ranking de participantes |
-| **Regalos** | Solo si se activó «Capturar regalos»: regalo, diamantes unitarios, repeticiones y total |
+| **Comentarios** | One row per comment, all 26 columns, with autofilter, a frozen header and clickable profile links |
+| **Usuarios** | Aggregated per author: comment count, first and last message, role and level |
+| **Resumen** | Session metadata (account, room, duration, totals, comments per minute) and a participant ranking |
+| **Regalos** | Only when *Capture gifts* was enabled: gift, unit diamonds, repeats and total |
 
-El fichero `EJEMPLO_salida.xlsx` incluido en el repositorio es una muestra
-generada con datos ficticios, para que puedas ver el formato sin ejecutar nada.
-
----
-
-## Estructura del proyecto
-
-```
-.
-├── INICIAR.bat            # Iniciador de doble clic (Windows)
-├── app.py                 # Servidor Flask y API (SSE, exportación, descargas)
-├── capturer.py            # Motor de captura: conexión, deduplicación, escritura
-├── exporter.py            # Generación del libro Excel
-├── demo.py                # Generador de eventos sintéticos
-├── captura_cli.py         # Modo consola
-├── autotest.py            # Autoprueba del pipeline completo
-├── introspect_proto.py    # Utilidad para inspeccionar el proto instalado
-├── templates/index.html   # Interfaz
-├── static/
-│   ├── app.js             # Lógica de la interfaz y cliente SSE
-│   └── style.css          # Estilos
-├── sesiones/              # Salidas (ignorada por git)
-└── requirements.txt
-```
+The [`EJEMPLO_salida.xlsx`](EJEMPLO_salida.xlsx) file in this repository is a sample built from fictional data, so you can inspect the format without running anything.
 
 ---
 
-## Cómo funciona
+## 🏗️ How it works
 
-### Captura
+![Architecture diagram: TikTok LIVE is read over its internal WebSocket by capturer.py, which runs asyncio in its own thread, writes each comment to a CSV row by row and hands messages to app.py through a queue; app.py streams them to the browser over Server-Sent Events, and an Excel workbook is generated when the capture stops](docs/arquitectura.svg)
 
-La API oficial de TikTok **no expone el chat de los directos**: ni la Display API
-ni la Research API. La vía viable es el WebSocket interno del directo, al que se
-accede con la librería [`TikTokLive`](https://github.com/isaackogan/TikTokLive).
-TikTok exige una firma criptográfica en la URL de conexión; la librería la delega
-en [Euler Stream](https://www.eulerstream.com), cuyo nivel comunitario es gratuito
-(2.500 peticiones al día, de sobra para esto).
+### 📡 Reading the stream
 
-### Arquitectura
+TikTok's official API **does not expose live stream chat** — neither the Display API nor the Research API. The workable route is the stream's internal WebSocket, accessed through the [`TikTokLive`](https://github.com/isaackogan/TikTokLive) library. TikTok requires a cryptographic signature on the connection URL; the library delegates that to [Euler Stream](https://www.eulerstream.com), whose community tier is free (2,500 requests a day, far more than this needs).
 
-El motor de captura corre un **event loop de asyncio en su propio hilo**, porque
-la librería es asíncrona y Flask es síncrono. Ambos se comunican exclusivamente a
-través de colas: el hilo de captura publica eventos, y el servidor los reenvía al
-navegador por **Server-Sent Events** (`/api/stream`).
+### 🧵 Architecture
 
-El primer evento del flujo es una *instantánea* con el estado completo; a partir
-de ahí solo viajan los comentarios nuevos. Así, si el navegador se reconecta, no
-pierde nada y no hace falta sondear el servidor.
+The capture engine runs an **asyncio event loop on its own thread**, because the library is asynchronous and Flask is synchronous. The two only ever communicate through queues: the capture thread publishes events, and the server forwards them to the browser over **Server-Sent Events** (`/api/stream`).
 
-### Detalles que importan
+The first event on the stream is a *snapshot* of the complete state; after that only new comments travel. That way a reconnecting browser loses nothing, and there's no need to poll.
 
-- **Deduplicación por `msg_id`**, nunca por `(usuario, texto)`. En una prueba real,
-  deduplicar por texto descartaba 27 de 56 comentarios válidos.
-- **Orden de parada**: primero se cancela el WebSocket y se espera a que termine,
-  y solo después se cierran los ficheros. Al revés, el siguiente evento que llega
-  revienta con `I/O operation on closed file`.
-- **Escritura defensiva**: lectura de campos con accesos tolerantes a nulos, para
-  que un cambio en el protocolo de TikTok no tumbe la captura.
+### ⚙️ Details that matter
 
-### Nota sobre las insignias
+- **Deduplication by `msg_id`**, never by `(user, text)`. In a real test, deduplicating by text discarded 27 out of 56 valid comments.
+- **Shutdown order**: the WebSocket is cancelled and awaited *before* the files are closed. The other way round, the next arriving event blows up with `I/O operation on closed file`.
+- **Defensive parsing**: fields are read with null-tolerant accessors, so a change in TikTok's protocol doesn't bring the capture down.
 
-`TikTokLive` 7.0.1 incorpora ayudantes para leer insignias (`get_all_badges`,
-`member_level`, `gifter_level`, `is_moderator`, `is_friend`, `is_top_gifter`) que
-**están rotos** contra la versión del protocolo que instala: buscan campos
-(`badges`, `badge_scene`, `log_extra`) que en realidad se llaman `badge_list`,
-`scene_type` y `privilege_log_extra`. El resultado es que devuelven vacío o
-`False` para todo el mundo, en silencio.
+### 🏅 A note on badges
 
-Este proyecto **no los usa**: lee `badge_list` directamente. Si en el futuro
-actualizas la librería, comprueba si ya lo arreglaron antes de dar por buenas las
-columnas de nivel. Los detalles están en `introspect_proto.py`, que documenta cómo
-inspeccionar el protocolo instalado en lugar de fiarse de la documentación.
+`TikTokLive` 7.0.1 ships helpers for reading badges (`get_all_badges`, `member_level`, `gifter_level`, `is_moderator`, `is_friend`, `is_top_gifter`) that are **broken** against the protocol version it installs: they look for fields (`badges`, `badge_scene`, `log_extra`) that are actually called `badge_list`, `scene_type` and `privilege_log_extra`. The result is that they return empty or `False` for everyone, silently.
+
+This project **doesn't use them** — it reads `badge_list` directly. If you upgrade the library later, check whether they've fixed it before trusting the level columns. [`introspect_proto.py`](introspect_proto.py) documents how to inspect the installed protocol instead of trusting the documentation.
 
 ---
 
-## Verificación
+## 🔍 Verification
 
-El repositorio incluye una autoprueba que recorre el pipeline completo con
-eventos sintéticos construidos con el protocolo real —sin necesidad de que haya
-un directo en vivo— y comprueba el CSV y el Excel resultantes:
+The repository includes a self-test that walks the entire pipeline with synthetic events built from the real protocol — no live stream needed — and checks the resulting CSV and Excel:
 
 ```bash
 .venv/Scripts/python.exe autotest.py
 ```
 
-Cubre la captura de comentarios y regalos, la deduplicación, la presencia y el
-formato de los 26 campos, la detección de roles e insignias, la escritura del CSV,
-la estructura del libro Excel y la conectividad con el servidor de firma. Salida
-esperada:
+It covers comment and gift capture, deduplication, the presence and format of all 26 fields, role and badge detection, CSV writing, the structure of the Excel workbook and connectivity with the signing server. Expected output:
 
 ```
 RESULTADO: todas las comprobaciones pasaron.
@@ -287,38 +254,22 @@ RESULTADO: todas las comprobaciones pasaron.
 
 ---
 
-## Limitaciones y avisos legales
+## ⚠️ Limitations and legal notes
 
-**El chat no se puede recuperar.** TikTok no almacena el chat de un directo. Esta
-herramienta solo captura lo que ocurre mientras está en ejecución; no hay forma de
-obtener comentarios de un directo ya terminado.
+**🔒 The chat cannot be recovered.** TikTok doesn't store the chat of a live stream. This tool only captures what happens while it's running; there is no way to retrieve comments from a stream that already ended.
 
-**Vía no oficial.** La captura se apoya en el WebSocket interno de TikTok, que sus
-términos de servicio no contemplan como canal oficial. El riesgo real es el bloqueo
-temporal de la IP o de la cuenta, no una consecuencia legal directa por el mero
-hecho de leer. Úsalo bajo tu responsabilidad.
+**🚧 Unofficial route.** The capture relies on TikTok's internal WebSocket, which their terms of service don't recognise as an official channel. The real risk is temporary blocking of your IP or account, not a direct legal consequence of merely reading. Use it at your own discretion.
 
-**Datos personales.** Los nombres de usuario, identificadores y comentarios son
-datos personales. Si vas a almacenarlos, analizarlos o publicarlos, necesitas una
-base legal para ello conforme al RGPD (en la Unión Europea) o la normativa
-equivalente de tu jurisdicción, además de informar sobre la finalidad y el plazo de
-conservación. La carpeta `sesiones/` está excluida del control de versiones
-precisamente para reducir el riesgo de publicar esos datos por accidente.
+**🛡️ Personal data.** Usernames, identifiers and comments are personal data. If you're going to store, analyse or publish them, you need a legal basis under the GDPR (in the EU) or the equivalent regulation in your jurisdiction, plus a stated purpose and retention period. The `sesiones/` folder is excluded from version control precisely to reduce the risk of publishing that data by accident.
 
-**Límite de peticiones.** El nivel gratuito de Euler Stream permite 2.500
-peticiones al día. Si tras muchas pruebas ves errores de *rate limit*, espera unos
-minutos: no es un fallo de conexión ni una cuenta inexistente. Con una clave de API
-de Euler Stream los límites son más altos.
+**🚦 Rate limits.** Euler Stream's free tier allows 2,500 requests a day. If you see *rate limit* errors after a lot of testing, wait a few minutes: it isn't a connection failure and it isn't a nonexistent account. An Euler Stream API key raises the limits.
 
-**Nombres de usuario.** Escribe la cuenta tal y como aparece en TikTok. Si el
-usuario no está en directo en ese momento, la aplicación lo indica explícitamente
-en lugar de fallar en silencio.
+**🔤 Usernames.** Type the account exactly as it appears on TikTok. If the user isn't live at that moment, the application says so explicitly instead of failing silently.
 
 ---
 
-## Licencia
+## 📄 License
 
-Distribuido bajo la licencia **MIT**. Consulta el fichero [LICENSE](LICENSE).
+Released under the **MIT** license. See the [LICENSE](LICENSE) file.
 
-La licencia cubre el código de este repositorio; no otorga ningún derecho sobre
-los datos que captures con él ni sobre la plataforma TikTok.
+The license covers the code in this repository; it grants no rights over the data you capture with it, nor over the TikTok platform.
