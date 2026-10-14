@@ -229,14 +229,16 @@ def api_demo():
     """
     global CURRENT
 
+    from demo import DEMO_ROOM_ID, DEMO_USER
+
     with _REGISTRY_LOCK:
         active = CURRENT
         if active is not None and active.state in ("connecting", "live", "stopping"):
             return jsonify({"ok": False, "error": "Detén la captura en curso antes de la demo."}), 409
-        session = CaptureSession("demo_simulado", capture_gifts=True)
+        session = CaptureSession(DEMO_USER, capture_gifts=True)
         session.state = "live"
         session.message = "Modo demostración (datos simulados)"
-        session.room_id = "0000000000000000000"
+        session.room_id = DEMO_ROOM_ID
         session._open_csv()
         session.started_at = datetime.now()
         SESSIONS[session.session_id] = session

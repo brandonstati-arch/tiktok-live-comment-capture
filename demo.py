@@ -60,6 +60,10 @@ FAKE_COMMENTS = [
 
 FAKE_GIFTS = [("Rosa", 5655, 1), ("TikTok", 5827, 1), ("Galaxia", 5587, 1000), ("Corazón", 5509, 5)]
 
+# Sala ficticia que se usa en las sesiones de demostración.
+DEMO_ROOM_ID = "7312345678901234567"
+DEMO_USER = "demo_simulado"
+
 
 def _badge(scene: str, level: int) -> BadgeStruct:
     """Construye una insignia con la forma REAL del proto instalado.
@@ -114,14 +118,44 @@ def _common(room_id: str, offset_ms: int = 0) -> CommonMessageData:
     )
 
 
+def _emit_gift(session, room_id: str) -> None:
+    user = _make_user(random.randrange(len(FAKE_USERS)))
+    name, gift_id, diamonds = random.choice(FAKE_GIFTS)
+    gift = ExtendedGift()
+    gift.id = gift_id
+    gift.name = name
+    gift.diamond_count = diamonds
+    gift.type = 1
+    repeats = random.choice([1, 1, 1, 3, 5, 10])
+    session.ingest_event(
+        GiftEvent(
+            common=_common(room_id),
+            user=user,
+            gift=gift,
+            repeat_count=repeats,
+            combo_count=repeats,
+        )
+    )
+
+
 def feed_demo(session, comments: int = 45, gifts: int = 8, should_stop=None) -> None:
     """Alimenta la sesión con comentarios y regalos simulados.
+
+    Los regalos se reparten entre los comentarios en lugar de ir todos al final,
+    que es como se comporta un directo real.
 
     `should_stop` es un callable opcional que se consulta en cada vuelta para
     poder cortar la demo a mitad (por ejemplo, al agotarse --segundos).
     """
-    room_id = session.room_id or "0000000000000000000"
+    room_id = session.room_id or DEMO_ROOM_ID
 
+    # Posiciones donde cae un regalo, repartidas a lo largo de la sesión.
+    gift_slots: set[int] = set()
+    if gifts > 0 and comments > 0:
+        step = max(1, comments // (gifts + 1))
+        gift_slots = {step * (i + 1) for i in range(gifts)}
+
+    gifts_sent = 0
     for i in range(comments):
         if should_stop is not None and should_stop():
             return
@@ -152,28 +186,18 @@ def feed_demo(session, comments: int = 45, gifts: int = 8, should_stop=None) -> 
             )
             session.ingest_event(event)
 
+        if i in gift_slots and gifts_sent < gifts:
+            _emit_gift(session, room_id)
+            gifts_sent += 1
+
         time.sleep(random.uniform(0.25, 0.9))
 
-    for _ in range(gifts):
+    # Si aún quedan regalos por enviar, se mandan al final.
+    while gifts_sent < gifts:
         if should_stop is not None and should_stop():
             return
-        user = _make_user(random.randrange(len(FAKE_USERS)))
-        name, gift_id, diamonds = random.choice(FAKE_GIFTS)
-        gift = ExtendedGift()
-        gift.id = gift_id
-        gift.name = name
-        gift.diamond_count = diamonds
-        gift.type = 1
-        repeats = random.choice([1, 1, 1, 3, 5, 10])
-        session.ingest_event(
-            GiftEvent(
-                common=_common(room_id),
-                user=user,
-                gift=gift,
-                repeat_count=repeats,
-                combo_count=repeats,
-            )
-        )
+        _emit_gift(session, room_id)
+        gifts_sent += 1
         time.sleep(random.uniform(0.3, 0.8))
 
     session.message = "Demostración finalizada · datos simulados"

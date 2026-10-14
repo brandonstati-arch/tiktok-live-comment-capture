@@ -63,7 +63,12 @@ def main() -> int:
     if not args.demo and not args.usuario:
         parser.error("indica el usuario de TikTok o usa --demo")
 
-    session = CaptureSession(args.usuario or "demo_simulado", capture_gifts=args.regalos or args.demo)
+    from demo import DEMO_ROOM_ID, DEMO_USER
+
+    session = CaptureSession(
+        DEMO_USER if args.demo else args.usuario,
+        capture_gifts=args.regalos or args.demo,
+    )
 
     stop = threading.Event()
     printer = threading.Thread(target=_drain, args=(session, stop), daemon=True)
@@ -71,7 +76,7 @@ def main() -> int:
 
     if args.demo:
         session.state = "live"
-        session.room_id = "0000000000000000000"
+        session.room_id = DEMO_ROOM_ID
         session._open_csv()
         from datetime import datetime
         session.started_at = datetime.now()
